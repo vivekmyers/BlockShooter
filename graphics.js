@@ -18,15 +18,17 @@ Graphics = function () {
             ctx.fillRect(0, 0, width, height);
         }
         sprites.forEach(s => {
-            let px = s.x || 0;
-            let py = s.y || 0;
+            const px = s.x || 0;
+            const py = s.y || 0;
             if (s.shape) {
                 ctx.globalAlpha = s.alpha || 1;
+                const sx = s.scaleX || 1;
+                const sy = s.scaleY || 1;
                 (s.shape.rectangles || []).forEach(r => {
-                    let w = r.width || 0;
-                    let h = r.height || 0;
-                    let cx = r.x || -w / 2;
-                    let cy = r.y || -h / 2;
+                    const w = sx * r.width || 0;
+                    const h = sy * r.height || 0;
+                    const cx = sx * r.x || -w / 2;
+                    const cy = sy * r.y || -h / 2;
                     ctx.fillStyle = r.color || "black";
                     ctx.fillRect(px + cx, py + cy, w, h);
                 });
@@ -35,7 +37,7 @@ Graphics = function () {
     }
 
     function update() {
-        let tmp = [];
+        const tmp = [];
         tasks.forEach(t => tmp.push(t));
         tasks = [];
         tmp.forEach(f => f());
@@ -54,24 +56,28 @@ Graphics = function () {
     }
 
     function checkCollisions(s) {
-        if (s.shape)
+        if (s.shape) {
+            const sx = s.scaleX || 1;
+            const sy = s.scaleY || 1;
             (s.shape.bounds || []).forEach(r => {
-                let w = r.width || 0;
-                let h = r.height || 0;
-                let cx = (r.x || -w / 2) + (s.x || 0);
-                let cy = (r.y || -h / 2) + (s.y || 0);
+                const w = sx * r.width || 0;
+                const h = sy * r.height || 0;
+                const cx = sx * (r.x || -w / 2) + (s.x || 0);
+                const cy = sy * (r.y || -h / 2) + (s.y || 0);
                 sprites.filter(o => o != s).forEach(o => {
+                    const osx = o.scaleX || 1;
+                    const osy = o.scaleY || 1;
                     if (o.shape)
                         (o.shape.bounds || []).forEach(b => {
-                            let bw = b.width || 0;
-                            let bh = b.height || 0;
-                            let p1 = {
-                                x: (b.x || -bw / 2) + (o.x || 0),
-                                y: (b.y || -bh / 2) + (o.y || 0)
+                            const bw = osx * (b.width || 0);
+                            const bh = osy * (b.height || 0);
+                            const p1 = {
+                                x: ((osx * b.x) || -bw / 2) + (o.x || 0),
+                                y: ((osy * b.y) || -bh / 2) + (o.y || 0)
                             };
-                            let p2 = {x: p1.x + bw, y: p1.y};
-                            let p3 = {x: p1.x + bw, y: p1.y + bh};
-                            let p4 = {x: p1.x, y: p1.y + bh};
+                            const p2 = {x: p1.x + bw, y: p1.y};
+                            const p3 = {x: p1.x + bw, y: p1.y + bh};
+                            const p4 = {x: p1.x, y: p1.y + bh};
 
                             function overlap(pt) {
                                 if (pt.x >= cx && pt.x <= (cx + w)) {
@@ -84,19 +90,20 @@ Graphics = function () {
 
                             if ([p1, p2, p3, p4].map(overlap).includes(true)) {
                                 if (o.collision) {
-                                    o.collision(s);
+                                    o.collision(s, r.id || s.id);
                                 }
                                 if (s.collision) {
-                                    s.collision(o);
+                                    s.collision(o, b.id || o.id);
                                 }
                             }
                         });
                 });
             });
+        }
     }
 
     function fadeBetween(sprite, current, final, time) {
-        let next = fadeBetween.bind(null, sprite, final, current, time);
+        const next = fadeBetween.bind(null, sprite, final, current, time);
         changeAlpha(sprite, current, final, time, next, step * time);
     }
 
@@ -107,27 +114,27 @@ Graphics = function () {
     function RandomParticle(sprite, coloring, particles) {
         this.x = sprite.x;
         this.y = sprite.y;
-        let theta = Math.random() * 2 * Math.PI;
-        let r = Math.random();
+        const theta = Math.random() * 2 * Math.PI;
+        const r = Math.random();
         this.shape = {
             rectangles: [
                 {width: particles, height: particles, color: coloring}
             ]
-        }
+        };
         this.dx = 180 * r * Math.cos(theta);
         this.dy = 180 * r * Math.sin(theta);
     }
 
     function burst(sprite, color, size) {
         for (let i = 0; i < Math.random() * 16 + 4; i++) {
-            let p = new RandomParticle(sprite, color, size);
+            const p = new RandomParticle(sprite, color, size);
             Graphics.add(p);
             Graphics.delete(p, 0.5);
         }
     }
 
     function changeAlpha(sprite, current, final, time, callback, count) {
-        let delta = (final - current) / time / step;
+        const delta = (final - current) / time / step;
         if (!sprite.alpha) {
             sprite.alpha = 1.0;
         }
@@ -151,7 +158,7 @@ Graphics = function () {
             } else {
                 started = true;
             }
-            let can = document.getElementById(canvas);
+            const can = document.getElementById(canvas);
             can.width = w;
             can.height = h;
             width = w;
@@ -193,12 +200,12 @@ Graphics = function () {
         explosion: function (location, color = "black", size = 10) {
             burst(location, color, size);
         },
-        background: function(b) {
+        background: function (b) {
             back = b;
         },
         delete: function (s, time = 0) {
             if (sprites.includes(s)) {
-                let tmp = {x: s.x, y: s.y, alpha: s.alpha || 1, dx: s.dx, dy: s.dy};
+                const tmp = {x: s.x, y: s.y, alpha: s.alpha || 1, dx: s.dx, dy: s.dy};
                 if (s.shape) {
                     tmp.shape = s.shape;
                     tmp.shape.bounds = [];

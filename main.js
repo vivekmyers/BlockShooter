@@ -2,7 +2,7 @@ window.onload = main;
 
 var action = '';
 document.addEventListener('keydown', e => {
-    action = e.key;
+    action = e.key.toLowerCase();
 });
 
 document.addEventListener('keyup', () => {
@@ -16,5 +16,5 @@ function main() {
     Graphics.background("lightblue");
     Graphics.add(block, ground);
     Array(4).fill(null).forEach(() => Graphics.add(bfac()));
-    Graphics.start(100);
+    Graphics.start(60);
 }
