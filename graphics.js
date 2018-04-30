@@ -33,7 +33,17 @@ Graphics = function () {
                     const cx = sx * r.x || -w / 2;
                     const cy = sy * r.y || -h / 2;
                     ctx.fillStyle = r.color || "black";
+                    ctx.strokeStyle = r.color || "black";
                     ctx.fillRect(px + cx, py + cy, w, h);
+                });
+                (s.shape.text || []).forEach(r => {
+                    const t = r.string || "";
+                    const cx = sx * (r.x || 0);
+                    const cy = sy * (r.y || 0);
+                    ctx.fillStyle = r.color || "black";
+                    ctx.font = (r.size || 12) + "px Georgia";
+                    const attr = r.stroke ? "strokeText" : "fillText";
+                    ctx[attr](t, px + cx, py + cy);
                 });
             }
         });
@@ -70,7 +80,7 @@ Graphics = function () {
                 const h = sy * r.height || 0;
                 const cx = sx * (r.x || -w / 2) + (s.x || 0);
                 const cy = sy * (r.y || -h / 2) + (s.y || 0);
-                sprites.filter(o => o != s).forEach(o => {
+                sprites.filter(o => o !== s).forEach(o => {
                     const osx = o.scaleX || 1;
                     const osy = o.scaleY || 1;
                     if (o.shape)
@@ -131,9 +141,9 @@ Graphics = function () {
         this.dy = 180 * r * Math.sin(theta);
     }
 
-    function burst(sprite, color, time, size) {
+    function burst(sprite, color, time, size, num) {
         let tmp = [];
-        for (let i = 0; i < Math.random() * 16 + 4; i++) {
+        for (let i = 0; i < Math.random() * num * 2 + 4; i++) {
             const p = new RandomParticle(sprite, color, size);
             Graphics.add(p);
             tmp.push(p);
@@ -218,8 +228,8 @@ Graphics = function () {
         after: function (time, callback) {
             tasks.push(() => wait(step * time, callback));
         },
-        explosion: function (location, color = "black", time = 0.5, size = 10) {
-            return burst(location, color, time, size);
+        explosion: function (location, color = "black", time = 0.5, size = 10, num = 8) {
+            return burst(location, color, time, size, num);
         },
         set background(b) {
             back = b;

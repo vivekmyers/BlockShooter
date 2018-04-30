@@ -47,12 +47,12 @@ Player.prototype = Object.create(Shooter.prototype);
 Player.prototype.constructor = Player;
 Player.prototype.die = function (o) {
     Shooter.prototype.die.call(this, o);
-    Graphics.after(1, Graphics.pause);
 };
 
 function Enemy(x, y, target) {
     Shooter.call(this, x, y);
     this.color = "darkred";
+    this.id = "Enemy";
     let toAct = true;
     const execute = function () {
         if (Math.abs(this.y - target.y) < 30 &&
@@ -154,7 +154,7 @@ Shooter.prototype.reposition = function (x) {
             {width: 18, height: 2, y: -18, color: "brown"},
             {width: 13.5, height: 2, y: -18.5, color: "brown"},
             {width: 9, height: 2, y: -19, color: "brown"}
-        ],
+        ]
     };
     this.shape.bounds = this.shape.rectangles;
 };
@@ -168,7 +168,7 @@ Shooter.prototype.update = function () {
             this.legPosition += this.direction * 50 / Graphics.step;
             this.reposition(this.legPosition);
             if (this.legPosition > 10 || this.legPosition < 0) {
-                this.direction = -this.direction;
+                this.direction *= -1;
             }
         }
     }
@@ -193,19 +193,13 @@ Shooter.prototype.collision = function (o, t) {
             this.dx = 0;
         }
     }
-    if (t === "Top") {
-        if (this.dy > 0) {
-            this.y -= this.dy / Graphics.step;
-            this.dy = 0;
-        }
-    }
     if (t === "Bottom") {
         if (this.dy < 0) {
             this.y -= this.dy / Graphics.step;
             this.dy = 0;
         }
     }
-    if (t === "Barrier") {
+    if (t === "Ground") {
         this.onGround = true;
         this.y -= this.dy / Graphics.step;
         this.dy = 0;
@@ -220,7 +214,36 @@ Shooter.prototype.die = function (o) {
     Graphics.toBack(Graphics.delete(this, 0.8));
 };
 
+function Title(text, color = "black") {
+    this.content = text;
+    this.alpha = 0.01;
+    this.start = () => {
+        Graphics.fade(this, 0.8, 3);
+    };
+    this.update = () => {
+        Graphics.toFront(this);
+    };
+    this.shape = {
+        rectangles: [
+            {width: 2000, height: 2000, color: "lightblue"}
+        ],
+        text: [
+            {string: text, color: color, size: 80, color: color}
+        ]
+    }
+}
+
+Title.prototype = {
+    get x() {
+        return Graphics.center.x - 20 * this.content.length;
+    },
+    get y() {
+        return Graphics.center.y + 20;
+    }
+};
+
 function Platform(x, y, width, height) {
+    Barrier.call(this, x, y, width, height);
     this.x = x;
     this.y = y;
     this.alpha = 1.0;
@@ -238,19 +261,7 @@ function Platform(x, y, width, height) {
         "cyan",
         "magenta"
     ];
-    this.color = colors[Math.floor(Math.random() * colors.length)];
-    this.shape = {
-        rectangles: [
-            {width: width, height: height, color: this.color}
-        ],
-        bounds: [
-            {width: width, height: height, id: "Barrier"},
-            {width: width - 5, height: 5, y: -height / 2, id: "Top"},
-            {width: width - 5, height: 5, y: height / 2, id: "Bottom"},
-            {width: 5, height: height - 5, x: width / 2, id: "Right"},
-            {width: 5, height: height - 5, x: -width / 2, id: "Left"}
-        ]
-    };
+    this.shape.rectangles[0].color = colors[Math.floor(Math.random() * colors.length)];
 }
 
 function Barrier(x, y, width, height) {
@@ -262,6 +273,7 @@ function Barrier(x, y, width, height) {
             {width: width, height: height, color: "gray"}
         ],
         bounds: [
+            {width: width, height: height / 2, y: -height / 2, id: "Ground"},
             {width: width, height: height, id: "Barrier"},
             {width: width - 5, height: 5, y: -height / 2, id: "Top"},
             {width: width - 5, height: 5, y: height / 2, id: "Bottom"},
@@ -290,11 +302,17 @@ function Bullet(x, y, dx, dy) {
             {width: 5, height: 5}
         ]
     };
-    this.start = function () {
-        Graphics.after(2, () => Graphics.delete(this, 0.5));
+    this.effect = function () {
+        if (Graphics.sprites.includes(this)) {
+            Graphics.explosion(this, "black", 0.03, 4);
+            Graphics.after(0.02, this.effect.bind(this));
+        }
     };
     this.update = function () {
         Graphics.explosion(this, "black", 0.03, 4);
+    };
+    this.start = function () {
+        Graphics.after(2, () => Graphics.delete(this, 0.5));
     };
     this.collision = function (o, t) {
         if (t === "Barrier") {
