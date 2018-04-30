@@ -8,6 +8,7 @@ Graphics = function () {
     let tasks = [];
     let step;
     let back;
+    let center = {};
     let started = false;
 
     function redraw() {
@@ -17,9 +18,11 @@ Graphics = function () {
             ctx.fillStyle = back;
             ctx.fillRect(0, 0, width, height);
         }
+        const centX = (center.x || 0) - width / 2;
+        const centY = (center.y || 0) - height / 2;
         sprites.forEach(s => {
-            const px = s.x || 0;
-            const py = s.y || 0;
+            const px = (s.x || 0) - centX;
+            const py = (s.y || 0) - centY;
             if (s.shape) {
                 ctx.globalAlpha = s.alpha || 1;
                 const sx = s.scaleX || 1;
@@ -37,22 +40,25 @@ Graphics = function () {
     }
 
     function update() {
-        const tmp = [];
-        tasks.forEach(t => tmp.push(t));
+        const tmp = tasks.slice();
         tasks = [];
         tmp.forEach(f => f());
-        sprites.forEach(s => {
+        const move = s => {
             if (s.dx) {
                 s.x += s.dx / step;
             }
             if (s.dy) {
                 s.y += s.dy / step;
             }
-            checkCollisions(s);
+        };
+        const update = s => {
             if (s.update) {
-                s.update(step);
+                s.update();
             }
-        });
+        };
+        sprites.forEach(move);
+        sprites.forEach(checkCollisions);
+        sprites.forEach(update);
     }
 
     function checkCollisions(s) {
@@ -104,7 +110,7 @@ Graphics = function () {
 
     function fadeBetween(sprite, current, final, time) {
         const next = fadeBetween.bind(null, sprite, final, current, time);
-        changeAlpha(sprite, current, final, time, next, step * time);
+        change("alpha", sprite, current, final, time, next, step * time);
     }
 
     function wait(steps, callback) {
@@ -125,24 +131,27 @@ Graphics = function () {
         this.dy = 180 * r * Math.sin(theta);
     }
 
-    function burst(sprite, color, size) {
+    function burst(sprite, color, time, size) {
+        let tmp = [];
         for (let i = 0; i < Math.random() * 16 + 4; i++) {
             const p = new RandomParticle(sprite, color, size);
             Graphics.add(p);
-            Graphics.delete(p, 0.5);
+            tmp.push(p);
+            Graphics.delete(p, time);
         }
+        return tmp;
     }
 
-    function changeAlpha(sprite, current, final, time, callback, count) {
+    function change(attr, sprite, current, final, time, callback, count) {
         const delta = (final - current) / time / step;
-        if (!sprite.alpha) {
-            sprite.alpha = 1.0;
+        if (!sprite[attr]) {
+            sprite[attr] = 1.0;
         }
         if (--count > 0) {
-            sprite.alpha += delta;
-            tasks.push(changeAlpha.bind(null, sprite, current, final, time, callback, count));
+            sprite[attr] += delta;
+            tasks.push(change.bind(null, attr, sprite, current, final, time, callback, count));
         } else {
-            sprite.alpha = final;
+            sprite[attr] = final;
             tasks.push(callback.bind(sprite));
         }
     }
@@ -174,6 +183,10 @@ Graphics = function () {
             renderer = setInterval(redraw, 1000 / fps);
             updater = setInterval(update, 1000 / fps);
         },
+        clear: function () {
+          sprites = [];
+          tasks = [];
+        },
         pause: function () {
             if (renderer) {
                 clearInterval(renderer);
@@ -192,15 +205,23 @@ Graphics = function () {
         },
         fade: function (sprite, final, time = 1, callback = () => {
         }) {
-            tasks.push(() => changeAlpha(sprite, sprite.alpha || 1, final, time, callback.bind(sprite), step * time));
+            tasks.push(() => change("alpha", sprite, sprite.alpha || 1, final, time, callback.bind(sprite), step * time));
+        },
+        resizeX: function (sprite, final, time = 1, callback = () => {
+        }) {
+            tasks.push(() => change("scaleX", sprite, sprite.alpha || 1, final, time, callback.bind(sprite), step * time));
+        },
+        resizeY: function (sprite, final, time = 1, callback = () => {
+        }) {
+            tasks.push(() => change("scaleY", sprite, sprite.alpha || 1, final, time, callback.bind(sprite), step * time));
         },
         after: function (time, callback) {
             tasks.push(() => wait(step * time, callback));
         },
-        explosion: function (location, color = "black", size = 10) {
-            burst(location, color, size);
+        explosion: function (location, color = "black", time = 0.5, size = 10) {
+            return burst(location, color, time, size);
         },
-        background: function (b) {
+        set background(b) {
             back = b;
         },
         delete: function (s, time = 0) {
@@ -209,15 +230,43 @@ Graphics = function () {
                 if (s.shape) {
                     tmp.shape = s.shape;
                     tmp.shape.bounds = [];
+                    tmp.scaleX = s.scaleX;
+                    tmp.scaleY = s.scaleY;
+                    tmp.alpha = s.alpha;
                 }
                 removeSprite.call(s);
                 Graphics.add(tmp);
-                tasks.push(() => changeAlpha(tmp, tmp.alpha, 0.1, time, removeSprite.bind(tmp), step * time));
+                tasks.push(() => change("alpha", tmp, tmp.alpha, 0.1, time, removeSprite.bind(tmp), step * time));
+                return tmp;
             }
         },
         add: function (...s) {
             s.forEach(p => sprites.push(p));
             s.filter(p => p.start).forEach(p => tasks.push(p.start.bind(p)));
+        },
+        get sprites() {
+            return sprites.slice();
+        },
+        toFront: function (sprite) {
+            if (sprites.includes(sprite)) {
+                sprites = sprites.filter(s => s !== sprite);
+                sprites.push(sprite);
+            }
+        },
+        toBack: function (sprite) {
+            if (sprites.includes(sprite)) {
+                sprites = sprites.filter(s => s !== sprite);
+                sprites.unshift(sprite);
+            }
+        },
+        get step() {
+            return step;
+        },
+        set center(c) {
+            center = c;
+        },
+        get center() {
+            return center;
         }
     }
 }();
