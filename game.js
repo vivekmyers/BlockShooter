@@ -3,7 +3,7 @@ function Game() {
         [
             this.level0,
             this.level1
-        ][n]();
+        ][n].call(this);
     };
 }
 
@@ -19,6 +19,7 @@ Game.prototype.level0 = function () {
         this.ay = y;
         this.x = x;
         this.y = y;
+        this.alpha = 1.0;
         this.color = "black";
         const that = this;
 
@@ -43,7 +44,7 @@ Game.prototype.level0 = function () {
 
     for (let i = -10; i < 10; i++) {
         for (let j = -10; j < 10; j++) {
-            Graphics.add(new Tmp(200 + 10 * i, 100 + 10 * j));
+            Graphics.add(new Tmp(10 * i, 100 + 10 * j));
         }
     }
 
@@ -97,19 +98,18 @@ Game.prototype.level0 = function () {
     Graphics.background = "lightblue";
     Graphics.center = player.center;
     Graphics.add(Gravity, p1, player, ground, wall1, wall2, roof, hill1, hill2, hill3);
-}
-;
+};
 
-Game.prototype.level1 = function () {
+Game.prototype.level1 = function reload() {
     Graphics.stop();
 
     const intro = new Intro("BlockShooter");
-    const player = new Player(-100, 200);
+    const player = new Player(-100, 315);
     const p1 = new Platform(-100, 350, 300, 20);
 
     function spawn(x, y) {
         const p = new Platform(x, y, Math.random() * 150 + 150, 20);
-        const enemy = new Enemy(x, y - 50, player);
+        const enemy = new Enemy(x, y - 35, player);
         Graphics.add(p, enemy);
     }
 
@@ -121,20 +121,36 @@ Game.prototype.level1 = function () {
     spawn(300, 400);
     spawn(-100, 0);
 
+    let paused = false;
+    let over = false;
+
     function checkState() {
-        if (!Graphics.sprites.includes(player)) {
-            end("Game Over", "red");
+        if (over && action === 'r') {
             clearInterval(int);
+            over = true;
+            reload();
+            Graphics.start(60);
         }
-        let done = true;
-        Graphics.sprites.forEach(s => {
-            if (s.id === "Enemy") {
-                done = false;
+        else if (!over) {
+            if (action === 'p' && !paused) {
+                paused = true;
+                Graphics.add(new Intro("Paused"));
+                Graphics.after(1, () => paused = false);
             }
-        });
-        if (done) {
-            end("Victory", "green");
-            clearInterval(int);
+            if (!Graphics.sprites.includes(player)) {
+                end("Game Over", "red");
+                over = true;
+            }
+            let done = true;
+            Graphics.sprites.forEach(s => {
+                if (s.id === "Enemy") {
+                    done = false;
+                }
+            });
+            if (done) {
+                end("Victory", "green");
+                over = true;
+            }
         }
     }
 

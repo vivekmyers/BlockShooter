@@ -205,6 +205,7 @@ Shooter.prototype.reposition = function (x) {
         ]
     };
     this.shape.bounds = this.shape.rectangles;
+
 };
 
 Shooter.prototype.act = () => {
@@ -268,8 +269,8 @@ Shooter.prototype.die = function (o) {
 
 function Intro(text, color = "black") {
     Title.call(this, text, color);
-    this.alpha = 0.8;
-    Graphics.after(0.5, () => {
+    this.alpha = this.opacity;
+    Graphics.after(0.01, () => {
         Graphics.pause();
         done = false;
         Graphics.fade(this, 0.01, 1, Graphics.delete.bind(null, this));
@@ -277,7 +278,7 @@ function Intro(text, color = "black") {
     let done = true;
 
     function check() {
-        if (action !== "" && !done) {
+        if ("wasd ".includes(action) && action !== '' && !done) {
             done = true;
             Graphics.resume();
             clearInterval(int);
@@ -300,19 +301,20 @@ Intro.prototype = {
 function Title(text, color = "black") {
     this.content = text;
     this.size = 80;
+    this.opacity = 0.8;
     this.alpha = 0.01;
     this.start = () => {
-        Graphics.fade(this, 0.8, 3);
+        Graphics.fade(this, this.opacity, 3);
     };
     this.update = () => {
         Graphics.toFront(this);
     };
     this.shape = {
         rectangles: [
-            {width: 2000, height: 2000, color: "blue"}
+            {width: 2000, height: 2000, color: "gray"}
         ],
         text: [
-            {string: text, color: color, size: this.size, color: color}
+            {string: text, color: color, size: this.size}
         ]
     }
 }
@@ -358,7 +360,7 @@ function Barrier(x, y, width, height) {
             {width: width, height: height, color: "gray"}
         ],
         bounds: [
-            {width: width - 5, height: 2 * height / 3, y: -height / 2, id: "Ground"},
+            {width: width - 5, height: height / 2, y: -height / 2, id: "Ground"},
             {width: width, height: height, id: "Barrier"},
             {width: width - 5, height: 5, y: -height / 2, id: "Top"},
             {width: width - 5, height: 5, y: height / 2 - 5, id: "Bottom"},
@@ -388,7 +390,7 @@ function Bullet(x, y, dx, dy) {
         ]
     };
     this.update = function () {
-        Graphics.explosion(this, "black", 0.03, 4);
+        Graphics.explosion(this, "black", 0.03, 5);
     };
     this.start = function () {
         Graphics.after(2, () => Graphics.delete(this, 0.5));

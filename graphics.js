@@ -24,7 +24,7 @@ Graphics = function () {
             const px = (s.x || 0) - centX;
             const py = (s.y || 0) - centY;
             if (s.shape) {
-                ctx.globalAlpha = s.alpha || 1;
+                ctx.globalAlpha = s.alpha === undefined ? 0 : s.alpha;
                 const sx = s.scaleX || 1;
                 const sy = s.scaleY || 1;
                 (s.shape.rectangles || []).forEach(r => {
@@ -78,8 +78,8 @@ Graphics = function () {
             (s.shape.bounds || []).forEach(r => {
                 const w = sx * r.width || 0;
                 const h = sy * r.height || 0;
-                const cx = sx * (r.x || -w / 2) + (s.x || 0);
-                const cy = sy * (r.y || -h / 2) + (s.y || 0);
+                const cx = (sx * r.x || -w / 2) + (s.x || 0);
+                const cy = (sy * r.y || -h / 2) + (s.y || 0);
                 sprites.filter(o => o !== s).forEach(o => {
                     const osx = o.scaleX || 1;
                     const osy = o.scaleY || 1;
@@ -88,8 +88,8 @@ Graphics = function () {
                             const bw = osx * (b.width || 0);
                             const bh = osy * (b.height || 0);
                             const p1 = {
-                                x: (osx * (b.x || -bw / 2)) + (o.x || 0),
-                                y: (osy * (b.y || -bh / 2)) + (o.y || 0)
+                                x: (osx * b.x || -bw / 2) + (o.x || 0),
+                                y: (osy * b.y || -bh / 2) + (o.y || 0)
                             };
                             const p2 = {x: p1.x + bw, y: p1.y};
                             const p3 = {x: p1.x + bw, y: p1.y + bh};
