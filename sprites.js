@@ -1,11 +1,11 @@
 (function () {
-    window.action = '';
+    window.action = {};
     document.addEventListener('keydown', e => {
-        window.action = e.key.toLowerCase();
+        window.action[e.key.toLowerCase()] = true;
     });
 
-    document.addEventListener('keyup', () => {
-        window.action = '';
+    document.addEventListener('keyup', e => {
+        window.action[e.key.toLowerCase()] = false;
     });
 })();
 
@@ -25,19 +25,19 @@ function Player(x, y) {
     Shooter.call(this, x, y);
     this.color = "darkblue";
     this.act = function () {
-        if (action === 'd') {
+        if (action['d']) {
             this.right();
         }
-        else if (action === 'a') {
+        else if (action['a']) {
             this.left();
         }
-        else if (action === '') {
+        else {
             this.none();
         }
-        else if (action === 'w') {
+        if (action['w']) {
             this.jump();
         }
-        else if (action === ' ') {
+        if (action[' ']) {
             this.shoot.call(this, Graphics.step);
         }
     };
@@ -278,7 +278,7 @@ function Intro(text, color = "black") {
     let done = true;
 
     function check() {
-        if ("wasd ".includes(action) && action !== '' && !done) {
+        if (['w', 'a', 's', 'd', ' '].map(k => action[k]).includes(true) && action !== '' && !done) {
             done = true;
             Graphics.resume();
             clearInterval(int);

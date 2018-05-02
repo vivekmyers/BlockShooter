@@ -125,14 +125,14 @@ Game.prototype.level1 = function reload() {
     let over = false;
 
     function checkState() {
-        if (over && action === 'r') {
+        if (over && action['r']) {
             clearInterval(int);
             over = true;
             reload();
             Graphics.start(60);
         }
         else if (!over) {
-            if (action === 'p' && !paused) {
+            if (action['p'] && !paused) {
                 paused = true;
                 Graphics.add(new Intro("Paused"));
                 Graphics.after(1, () => paused = false);
