@@ -96,8 +96,8 @@ Graphics = function () {
                             const p4 = {x: p1.x, y: p1.y + bh};
 
                             function overlap(pt) {
-                                if (pt.x >= cx && pt.x <= (cx + w)) {
-                                    if (pt.y > cy && pt.y <= (cy + h)) {
+                                if (pt.x >= cx && pt.x <= (cx + w) || pt.x <= cx && pt.x >= (cx + w)) {
+                                    if (pt.y >= cy && pt.y <= (cy + h) || pt.y <= cy && pt.y >= (cy + h)) {
                                         return true;
                                     }
                                 }
@@ -106,10 +106,10 @@ Graphics = function () {
 
                             if ([p1, p2, p3, p4].map(overlap).includes(true)) {
                                 if (o.collision) {
-                                    o.collision(s, r.id || s.id);
+                                    o.collision(s, r.id || s.id, b.id || o.id);
                                 }
                                 if (s.collision) {
-                                    s.collision(o, b.id || o.id);
+                                    s.collision(o, b.id || o.id, r.id || s.id);
                                 }
                             }
                         });
@@ -127,14 +127,14 @@ Graphics = function () {
         steps > 0 ? tasks.push(wait.bind(this, steps - 1, callback)) : callback.call(this);
     }
 
-    function RandomParticle(sprite, coloring, particles) {
+    function RandomParticle(sprite, coloring, size) {
         this.x = sprite.x;
         this.y = sprite.y;
         const theta = Math.random() * 2 * Math.PI;
         const r = Math.random();
         this.shape = {
             rectangles: [
-                {width: particles, height: particles, color: coloring}
+                {width: size, height: size, color: coloring}
             ]
         };
         this.dx = 180 * r * Math.cos(theta);
@@ -193,9 +193,11 @@ Graphics = function () {
             renderer = setInterval(redraw, 1000 / fps);
             updater = setInterval(update, 1000 / fps);
         },
-        clear: function () {
-          sprites = [];
-          tasks = [];
+        stop: function () {
+            Graphics.pause();
+            started = false;
+            sprites = [];
+            tasks = [];
         },
         pause: function () {
             if (renderer) {
@@ -207,7 +209,7 @@ Graphics = function () {
         },
         resume: function () {
             Graphics.pause();
-            renderer = setInterval(redraw, 1000 / step);
+            renderer = setInterval(redraw, 1000 / fps);
             updater = setInterval(update, 1000 / step);
         },
         blink: function (sprite, alpha = 0, time = 0.5) {

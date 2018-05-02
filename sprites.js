@@ -54,12 +54,28 @@ function Enemy(x, y, target) {
     this.color = "darkred";
     this.id = "Enemy";
     let toAct = true;
+    this.wait = false;
     const execute = function () {
         if (Math.abs(this.y - target.y) < 30 &&
             this.scaleX * this.x < this.scaleX * target.x &&
-            Graphics.sprites.includes(target))
+            Graphics.sprites.includes(target)) {
             this.shoot(Graphics.step);
-        switch (Math.floor(Math.random() * 5)) {
+        }
+        if (this.wait) {
+            this.dx = this.tmpSpeed;
+            return;
+        }
+        if (this.jumping && !this.nojumping && this.onGround && Math.random() < 0.5) {
+            this.jump();
+            if (this.scaleX === 1) {
+                this.right();
+            } else {
+                this.left();
+            }
+            this.wait = true;
+            this.tmpSpeed = this.dx;
+            Graphics.after(1, () => this.wait = false);
+        } else switch (Math.floor(Math.random() * 6)) {
             case 0:
                 this.right();
                 break;
@@ -72,11 +88,22 @@ function Enemy(x, y, target) {
             case 3:
                 this.none();
                 break;
+            case 4:
+                if (target.x > this.x)
+                    this.right();
+                else
+                    this.left();
+                break;
             default:
                 break;
         }
+        this.jumping = false;
+        this.nojumping = false;
     };
     this.act = function () {
+        if (this.wait) {
+            this.dx = this.tmpSpeed;
+        }
         if (toAct && Graphics.sprites.includes(this)) {
             execute.call(this);
             toAct = false;
@@ -87,6 +114,26 @@ function Enemy(x, y, target) {
 
 Enemy.prototype = Object.create(Shooter.prototype);
 Enemy.prototype.constructor = Enemy;
+Enemy.prototype.reposition = function (x) {
+    Shooter.prototype.reposition.call(this, x);
+    this.shape.rectangles = this.shape.rectangles.slice();
+    this.shape.bounds.push({width: 10, height: 60, x: 100, y: -260, id: "Nojump", color: "red"});
+    this.shape.bounds.push({width: 10, height: 180, x: 20, y: -260, id: "Nojump", color: "red"});
+    this.shape.bounds.push({width: 10, height: 180, x: 100, y: -200, id: "Jump", color: "green"});
+    this.shape.bounds.push({width: 10, height: 60, x: 150, y: -260, id: "Nojump", color: "red"});
+    this.shape.bounds.push({width: 10, height: 180, x: 150, y: -200, id: "Jump", color: "green"});
+    //this.shape.bounds.push({width: 10, height: 60, x: 200, y: -260, id: "Nojump", color: "red"});
+    //this.shape.bounds.push({width: 10, height: 180, x: 200, y: -200, id: "Jump", color: "green"});
+};
+Enemy.prototype.collision = function (o, t, m) {
+    Shooter.prototype.collision.call(this, o, t, m);
+    if (t === "Barrier")
+        if (m === "Jump") {
+            this.jumping = true;
+        } else if (m === "Nojump") {
+            this.nojumping = true;
+        }
+};
 
 function Shooter(x, y) {
     if (new.target === Shooter) {
@@ -127,14 +174,15 @@ function Shooter(x, y) {
         this.dx = 0;
     };
     this.jump = function () {
-        if (this.onGround)
+        if (this.onGround) {
             this.dy = -this.speed * 3.5;
+        }
     };
     this.shoot = function (step) {
         if (this.loaded) {
             this.loaded = false;
             Graphics.after.call(this, 1, () => this.loaded = true);
-            const p = new Bullet(this.x + 22 * this.scaleX, this.y, this.dx + 400 * this.scaleX, (this.dy - 1000 / step) / 4);
+            const p = new Bullet(this.x + 20 * this.scaleX, this.y + 2, this.dx + 400 * this.scaleX, (this.dy - 1000 / step) / 4);
             Graphics.add(p);
         }
     };
@@ -172,12 +220,14 @@ Shooter.prototype.update = function () {
             }
         }
     }
-    const that = this;
     this.act(Graphics.step);
     this.onGround = false;
 };
 
-Shooter.prototype.collision = function (o, t) {
+Shooter.prototype.collision = function (o, t, m) {
+    if (m !== this.id) {
+        return;
+    }
     if (t === "Bullet") {
         this.die(o);
     }
@@ -277,8 +327,8 @@ function Barrier(x, y, width, height) {
             {width: width, height: height, id: "Barrier"},
             {width: width - 5, height: 5, y: -height / 2, id: "Top"},
             {width: width - 5, height: 5, y: height / 2, id: "Bottom"},
-            {width: 5, height: height - 5, x: width / 2, id: "Right"},
-            {width: 5, height: height - 5, x: -width / 2, id: "Left"}
+            {width: 5, height: height - 5, x: width / 2 - 2, id: "Right"},
+            {width: 5, height: height - 5, x: -width / 2 - 3, id: "Left"}
         ]
     };
     const that = this;
@@ -288,7 +338,7 @@ function Barrier(x, y, width, height) {
 }
 
 function Bullet(x, y, dx, dy) {
-    this.id = "Bullet";
+    Graphics.after(0.01, () => this.id = "Bullet");
     this.dx = dx;
     this.dy = dy;
     this.x = x;
@@ -301,12 +351,6 @@ function Bullet(x, y, dx, dy) {
         bounds: [
             {width: 5, height: 5}
         ]
-    };
-    this.effect = function () {
-        if (Graphics.sprites.includes(this)) {
-            Graphics.explosion(this, "black", 0.03, 4);
-            Graphics.after(0.02, this.effect.bind(this));
-        }
     };
     this.update = function () {
         Graphics.explosion(this, "black", 0.03, 4);
