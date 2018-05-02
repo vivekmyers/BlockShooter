@@ -24,7 +24,7 @@ Graphics = function () {
             const px = (s.x || 0) - centX;
             const py = (s.y || 0) - centY;
             if (s.shape) {
-                ctx.globalAlpha = s.alpha === undefined ? 0 : s.alpha;
+                ctx.globalAlpha = s.alpha === undefined ? 1 : s.alpha;
                 const sx = s.scaleX || 1;
                 const sy = s.scaleY || 1;
                 (s.shape.rectangles || []).forEach(r => {
@@ -41,7 +41,7 @@ Graphics = function () {
                     const cx = sx * (r.x || 0);
                     const cy = sy * (r.y || 0);
                     ctx.fillStyle = r.color || "black";
-                    ctx.font = (r.size || 12) + "px Georgia";
+                    ctx.font = (r.size || 12) + "px Impact";
                     const attr = r.stroke ? "strokeText" : "fillText";
                     ctx[attr](t, px + cx, py + cy);
                 });

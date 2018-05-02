@@ -290,10 +290,10 @@ function Intro(text, color = "black") {
 
 Intro.prototype = {
     get x() {
-        return Graphics.center.x - 20 * this.content.length;
+        return Graphics.center.x - 19 * this.content.length;
     },
     get y() {
-        return Graphics.center.y + 20;
+        return Graphics.center.y + 28;
     },
     constructor: Intro
 };
@@ -321,10 +321,10 @@ function Title(text, color = "black") {
 
 Title.prototype = {
     get x() {
-        return Graphics.center.x - 22 * this.content.length;
+        return Graphics.center.x - 19 * this.content.length;
     },
     get y() {
-        return Graphics.center.y + 20;
+        return Graphics.center.y + 28;
     },
     constructor: Title
 };
@@ -351,6 +351,39 @@ function Platform(x, y, width, height) {
     this.shape.rectangles[0].color = colors[Math.floor(Math.random() * colors.length)];
 }
 
+function Background() {
+    function Block() {
+        this.start = () => {
+            Graphics.toBack.call(null, this);
+            Graphics.after(5, Graphics.delete.bind(null, this));
+        };
+        const rand = x => Math.random() * x;
+        this.x = -1000;
+        this.y = -1000 + rand(2000);
+        this.dx = rand(500);
+        this.alpha = 0.5;
+        this.shape = {
+            rectangles: [
+                {width: rand(50) + 30, height: rand(20) + 10, color: "blue"}
+            ]
+        }
+
+    }
+
+    const spawn = () => {
+        for (let i = 0; i < 8; i++) {
+            Graphics.add(new Block());
+        }
+        Graphics.after(0.1, spawn)
+    };
+
+    this.start = () => {
+        Graphics.background = "lightblue";
+        //spawn();
+    }
+
+}
+
 function Barrier(x, y, width, height) {
     this.x = x;
     this.y = y;
@@ -375,7 +408,7 @@ function Barrier(x, y, width, height) {
 }
 
 function Bullet(x, y, dx, dy) {
-    Graphics.after(0.01, () => this.id = "Bullet");
+    Graphics.after(0, () => this.id = "Bullet");
     this.dx = dx;
     this.dy = dy;
     this.x = x;

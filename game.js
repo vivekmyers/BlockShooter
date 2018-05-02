@@ -104,8 +104,8 @@ Game.prototype.level1 = function reload() {
     Graphics.stop();
 
     const intro = new Intro("BlockShooter");
-    const player = new Player(-100, 315);
-    const p1 = new Platform(-100, 350, 300, 20);
+    const player = new Player(-50, 315);
+    const p1 = new Platform(-50, 350, 200, 20);
 
     function spawn(x, y) {
         const p = new Platform(x, y, Math.random() * 150 + 150, 20);
@@ -164,7 +164,6 @@ Game.prototype.level1 = function reload() {
     const wall2 = new Barrier(1200, 0, 800, 2000);
     const roof = new Barrier(0, -800, 3000, 800);
 
-    Graphics.background = "lightblue";
     Graphics.center = player.center;
-    Graphics.add(Gravity, p1, player, ground, wall1, wall2, roof, hill1, hill2, hill3, intro);
+    Graphics.add(Gravity, p1, player, ground, wall1, wall2, roof, hill1, hill2, hill3, intro, new Background());
 };
