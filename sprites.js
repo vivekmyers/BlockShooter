@@ -116,7 +116,7 @@ Enemy.prototype = Object.create(Shooter.prototype);
 Enemy.prototype.constructor = Enemy;
 Enemy.prototype.reposition = function (x) {
     Shooter.prototype.reposition.call(this, x);
-    this.shape.rectangles = this.shape.rectangles.slice();
+    this.shape.bounds = Object.create(this.shape.rectangles);
     this.shape.bounds.push({width: 10, height: 60, x: 100, y: -260, id: "Nojump", color: "red"});
     this.shape.bounds.push({width: 10, height: 180, x: 20, y: -260, id: "Nojump", color: "red"});
     this.shape.bounds.push({width: 10, height: 180, x: 100, y: -200, id: "Jump", color: "green"});
@@ -250,9 +250,11 @@ Shooter.prototype.collision = function (o, t, m) {
         }
     }
     if (t === "Ground") {
-        this.onGround = true;
-        this.y -= this.dy / Graphics.step;
-        this.dy = 0;
+        if (this.dy > 0) {
+            this.onGround = true;
+            this.y -= this.dy / Graphics.step;
+            this.dy = 0;
+        }
     }
 };
 
@@ -264,8 +266,40 @@ Shooter.prototype.die = function (o) {
     Graphics.toBack(Graphics.delete(this, 0.8));
 };
 
+function Intro(text, color = "black") {
+    Title.call(this, text, color);
+    this.alpha = 0.8;
+    Graphics.after(0.5, () => {
+        Graphics.pause();
+        done = false;
+        Graphics.fade(this, 0.01, 1, Graphics.delete.bind(null, this));
+    });
+    let done = true;
+
+    function check() {
+        if (action !== "" && !done) {
+            done = true;
+            Graphics.resume();
+            clearInterval(int);
+        }
+    }
+
+    const int = setInterval(check, 100);
+}
+
+Intro.prototype = {
+    get x() {
+        return Graphics.center.x - 20 * this.content.length;
+    },
+    get y() {
+        return Graphics.center.y + 20;
+    },
+    constructor: Intro
+};
+
 function Title(text, color = "black") {
     this.content = text;
+    this.size = 80;
     this.alpha = 0.01;
     this.start = () => {
         Graphics.fade(this, 0.8, 3);
@@ -275,21 +309,22 @@ function Title(text, color = "black") {
     };
     this.shape = {
         rectangles: [
-            {width: 2000, height: 2000, color: "lightblue"}
+            {width: 2000, height: 2000, color: "blue"}
         ],
         text: [
-            {string: text, color: color, size: 80, color: color}
+            {string: text, color: color, size: this.size, color: color}
         ]
     }
 }
 
 Title.prototype = {
     get x() {
-        return Graphics.center.x - 20 * this.content.length;
+        return Graphics.center.x - 22 * this.content.length;
     },
     get y() {
         return Graphics.center.y + 20;
-    }
+    },
+    constructor: Title
 };
 
 function Platform(x, y, width, height) {
@@ -323,12 +358,12 @@ function Barrier(x, y, width, height) {
             {width: width, height: height, color: "gray"}
         ],
         bounds: [
-            {width: width, height: height / 2, y: -height / 2, id: "Ground"},
+            {width: width - 5, height: 2 * height / 3, y: -height / 2, id: "Ground"},
             {width: width, height: height, id: "Barrier"},
             {width: width - 5, height: 5, y: -height / 2, id: "Top"},
-            {width: width - 5, height: 5, y: height / 2, id: "Bottom"},
-            {width: 5, height: height - 5, x: width / 2 - 2, id: "Right"},
-            {width: 5, height: height - 5, x: -width / 2 - 3, id: "Left"}
+            {width: width - 5, height: 5, y: height / 2 - 5, id: "Bottom"},
+            {width: 5, height: height - 5, x: width / 2 - 5, id: "Right"},
+            {width: 5, height: height - 5, x: -width / 2, id: "Left"}
         ]
     };
     const that = this;

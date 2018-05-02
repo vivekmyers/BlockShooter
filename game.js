@@ -72,7 +72,7 @@ Game.prototype.level0 = function () {
 
     function checkState() {
         if (!Graphics.sprites.includes(player)) {
-            end("You Lose", "red");
+            end("Game Over", "red");
             clearInterval(int);
         }
         let done = true;
@@ -82,7 +82,7 @@ Game.prototype.level0 = function () {
             }
         });
         if (done) {
-            end("You Win", "green");
+            end("Victory", "green");
             clearInterval(int);
         }
     }
@@ -102,6 +102,8 @@ Game.prototype.level0 = function () {
 
 Game.prototype.level1 = function () {
     Graphics.stop();
+
+    const intro = new Intro("BlockShooter");
     const player = new Player(-100, 200);
     const p1 = new Platform(-100, 350, 300, 20);
 
@@ -111,7 +113,6 @@ Game.prototype.level1 = function () {
         Graphics.add(p, enemy);
     }
 
-    let int = setInterval(checkState, 100);
     spawn(400, 50);
     spawn(650, 250);
     spawn(220, 170);
@@ -122,7 +123,7 @@ Game.prototype.level1 = function () {
 
     function checkState() {
         if (!Graphics.sprites.includes(player)) {
-            end("You Lose", "red");
+            end("Game Over", "red");
             clearInterval(int);
         }
         let done = true;
@@ -132,10 +133,12 @@ Game.prototype.level1 = function () {
             }
         });
         if (done) {
-            end("You Win", "green");
+            end("Victory", "green");
             clearInterval(int);
         }
     }
+
+    let int = setInterval(checkState, 100);
 
     const ground = new Barrier(0, 750, 3000, 200);
     const hill1 = new Barrier(200, 700, 300, 300);
@@ -144,7 +147,8 @@ Game.prototype.level1 = function () {
     const wall1 = new Barrier(-800, 0, 800, 2000);
     const wall2 = new Barrier(1200, 0, 800, 2000);
     const roof = new Barrier(0, -800, 3000, 800);
+
     Graphics.background = "lightblue";
     Graphics.center = player.center;
-    Graphics.add(Gravity, p1, player, ground, wall1, wall2, roof, hill1, hill2, hill3);
+    Graphics.add(Gravity, p1, player, ground, wall1, wall2, roof, hill1, hill2, hill3, intro);
 };

@@ -88,8 +88,8 @@ Graphics = function () {
                             const bw = osx * (b.width || 0);
                             const bh = osy * (b.height || 0);
                             const p1 = {
-                                x: ((osx * b.x) || -bw / 2) + (o.x || 0),
-                                y: ((osy * b.y) || -bh / 2) + (o.y || 0)
+                                x: (osx * (b.x || -bw / 2)) + (o.x || 0),
+                                y: (osy * (b.y || -bh / 2)) + (o.y || 0)
                             };
                             const p2 = {x: p1.x + bw, y: p1.y};
                             const p3 = {x: p1.x + bw, y: p1.y + bh};
@@ -209,7 +209,7 @@ Graphics = function () {
         },
         resume: function () {
             Graphics.pause();
-            renderer = setInterval(redraw, 1000 / fps);
+            renderer = setInterval(redraw, 1000 / step);
             updater = setInterval(update, 1000 / step);
         },
         blink: function (sprite, alpha = 0, time = 0.5) {
