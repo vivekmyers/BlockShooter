@@ -68,7 +68,7 @@ function Enemy(x, y, target) {
             this.dx = this.tmpSpeed;
             return;
         }
-        if (this.jumping && !this.nojumping && this.onGround && Math.random() < 0.5) {
+        if (this.jumping && !this.nojumping && this.onGround && Math.random() < 0.8) {
             this.jump();
             if (this.scaleX === 1) {
                 this.right();
@@ -119,7 +119,6 @@ Enemy.prototype = Object.create(Shooter.prototype);
 Enemy.prototype.constructor = Enemy;
 Enemy.prototype.reposition = function (x) {
     Shooter.prototype.reposition.call(this, x);
-    this.shape.bounds = Object.create(this.shape.rectangles);
     this.shape.bounds.push({width: 10, height: 60, x: 100, y: -260, id: "Nojump", color: "red"});
     this.shape.bounds.push({width: 10, height: 180, x: 20, y: -260, id: "Nojump", color: "red"});
     this.shape.bounds.push({width: 10, height: 180, x: 100, y: -200, id: "Jump", color: "green"});
@@ -206,10 +205,14 @@ Shooter.prototype.reposition = function (x) {
             {width: 18, height: 2, y: -18, color: "brown"},
             {width: 13.5, height: 2, y: -18.5, color: "brown"},
             {width: 9, height: 2, y: -19, color: "brown"}
+        ],
+        bounds: [
+            {width: 24, height: 12, x: -10, y: -20},
+            {width: 24, height: 12, x: -10, y: -8},
+            {width: 24, height: 12, x: -10, y: 4},
+            {width: 24, height: 13, x: -10, y: 12},
         ]
     };
-    this.shape.bounds = this.shape.rectangles;
-
 };
 
 Shooter.prototype.act = () => {
@@ -254,7 +257,7 @@ Shooter.prototype.collision = function (o, t, m) {
             this.dy = 0;
         }
     }
-    if (t === "Ground") {
+    if (t === "Top") {
         if (this.dy > 0) {
             this.onGround = true;
             this.y -= this.dy / Graphics.step;
@@ -437,10 +440,9 @@ function Barrier(x, y, width, height) {
             {width: width, height: height, color: "gray"}
         ],
         bounds: [
-            {width: width - 5, height: 10, y: -height / 2, id: "Ground"},
             {width: width, height: height, id: "Barrier"},
-            {width: width - 5, height: 5, y: -height / 2, id: "Top"},
-            {width: width - 5, height: 5, y: height / 2 - 5, id: "Bottom"},
+            {width: width, height: 10, y: -height / 2, id: "Top"},
+            {width: width, height: 10, y: height / 2 - 5, id: "Bottom"},
             {width: 5, height: height - 5, x: width / 2 - 5, id: "Right"},
             {width: 5, height: height - 5, x: -width / 2, id: "Left"}
         ]
@@ -465,7 +467,6 @@ function Bullet(x, y, dx, dy) {
         ]
     };
     this.update = function () {
-        Graphics.explosion(this, "black", 0.03, 5);
         Graphics.explosion(this, "black", 0.03, 5);
     };
     this.start = function () {
