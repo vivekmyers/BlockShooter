@@ -2,6 +2,9 @@
     window.action = {};
     document.addEventListener('keydown', e => {
         window.action[e.key.toLowerCase()] = true;
+        if(e.key === ' ') {
+            e.preventDefault();
+        }
     });
 
     document.addEventListener('keyup', e => {
@@ -139,6 +142,7 @@ function Shooter(x, y) {
     if (new.target === Shooter) {
         return new Object(undefined);
     }
+    this.group = "Shooter";
     Gravity.apply(this);
     this.speed = 200;
     this.dy = 0;
@@ -420,20 +424,20 @@ function Background(x, y) {
         Graphics.background = "rgb(125, 220, 250)";
         spawn();
     }
-
 }
 
 function Barrier(x, y, width, height) {
     this.x = x;
     this.y = y;
     this.z = 0;
+    this.group = "Barrier";
     this.alpha = 1.0;
     this.shape = {
         rectangles: [
             {width: width, height: height, color: "gray"}
         ],
         bounds: [
-            {width: width - 5, height: height / 2, y: -height / 2, id: "Ground"},
+            {width: width - 5, height: 10, y: -height / 2, id: "Ground"},
             {width: width, height: height, id: "Barrier"},
             {width: width - 5, height: 5, y: -height / 2, id: "Top"},
             {width: width - 5, height: 5, y: height / 2 - 5, id: "Bottom"},
@@ -445,6 +449,7 @@ function Barrier(x, y, width, height) {
 
 function Bullet(x, y, dx, dy) {
     Graphics.after(0, () => this.id = "Bullet");
+    this.group = "Bullet";
     this.dx = dx;
     this.dy = dy;
     this.x = x;

@@ -93,6 +93,11 @@ Graphics = function () {
                 const cx = (sx * r.x || -w / 2) + (s.x || 0);
                 const cy = (sy * r.y || -h / 2) + (s.y || 0);
                 sprites.filter(o => o !== s).forEach(o => {
+                    if (o.group && s.group) {
+                        if (o.group === s.group) {
+                            return;
+                        }
+                    }
                     const osx = o.scaleX || 1;
                     const osy = o.scaleY || 1;
                     if (o.shape)
