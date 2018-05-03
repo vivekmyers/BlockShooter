@@ -269,11 +269,12 @@ Shooter.prototype.die = function (o) {
 
 function Intro(text, color = "black") {
     Title.call(this, text, color);
+    this.z = 3;
     this.alpha = this.opacity;
     Graphics.after(0.01, () => {
         Graphics.pause();
         done = false;
-        Graphics.fade(this, 0.01, 1, Graphics.delete.bind(null, this));
+        Graphics.fade(this, 0, 1, Graphics.delete.bind(null, this));
     });
     let done = true;
 
@@ -465,6 +466,7 @@ function Bullet(x, y, dx, dy) {
         ]
     };
     this.update = function () {
+        Graphics.explosion(this, "black", 0.03, 5);
         Graphics.explosion(this, "black", 0.03, 5);
     };
     this.start = function () {

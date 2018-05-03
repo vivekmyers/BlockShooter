@@ -47,7 +47,6 @@ Graphics = function () {
                     ctx.strokeStyle = r.color || "black";
                     ctx.beginPath();
                     ctx.arc(px + cx, py + cy, (w + h) / 2, 0, 2 * Math.PI);
-                    console.log((sx + sy) / 2);
                     ctx.fill();
                 });
                 (s.shape.text || []).forEach(r => {
@@ -168,7 +167,7 @@ Graphics = function () {
 
     function change(attr, sprite, current, final, time, callback, count) {
         const delta = (final - current) / time / step;
-        if (!sprite[attr]) {
+        if (sprite[attr] === undefined) {
             sprite[attr] = 1.0;
         }
         if (--count > 0) {
@@ -252,6 +251,10 @@ Graphics = function () {
         },
         delete: function (s, time = 0) {
             if (sprites.includes(s)) {
+                if (time === 0) {
+                    removeSprite.call(s);
+                    return;
+                }
                 const tmp = {x: s.x, y: s.y, alpha: s.alpha || 1, dx: s.dx, dy: s.dy};
                 if (s.shape) {
                     tmp.shape = s.shape;
