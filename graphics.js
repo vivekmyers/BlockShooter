@@ -12,6 +12,8 @@ Graphics = function () {
     let started = false;
 
     function redraw() {
+        sprites.sort((a,b) => (a.z || 0) - (b.z || 0));
+        const tmp = sprites.slice();
         ctx.clearRect(0, 0, width, height);
         if (back) {
             ctx.globalAlpha = 1;
@@ -20,7 +22,7 @@ Graphics = function () {
         }
         const centX = (center.x || 0) - width / 2;
         const centY = (center.y || 0) - height / 2;
-        sprites.forEach(s => {
+        tmp.forEach(s => {
             const px = (s.x || 0) - centX;
             const py = (s.y || 0) - centY;
             if (s.shape) {
@@ -35,6 +37,18 @@ Graphics = function () {
                     ctx.fillStyle = r.color || "black";
                     ctx.strokeStyle = r.color || "black";
                     ctx.fillRect(px + cx, py + cy, w, h);
+                });
+                (s.shape.circles || []).forEach(r => {
+                    const w = sx * r.radius || 0;
+                    const h = sy * r.radius || 0;
+                    const cx = sx * r.x || 0;
+                    const cy = sy * r.y || 0;
+                    ctx.fillStyle = r.color || "black";
+                    ctx.strokeStyle = r.color || "black";
+                    ctx.beginPath();
+                    ctx.arc(px + cx, py + cy, (w + h) / 2, 0, 2 * Math.PI);
+                    console.log((sx + sy) / 2);
+                    ctx.fill();
                 });
                 (s.shape.text || []).forEach(r => {
                     const t = r.string || "";
@@ -260,16 +274,10 @@ Graphics = function () {
             return sprites.slice();
         },
         toFront: function (sprite) {
-            if (sprites.includes(sprite)) {
-                sprites = sprites.filter(s => s !== sprite);
-                sprites.push(sprite);
-            }
+            sprite.z = 1;
         },
         toBack: function (sprite) {
-            if (sprites.includes(sprite)) {
-                sprites = sprites.filter(s => s !== sprite);
-                sprites.unshift(sprite);
-            }
+            sprite.z = -1;
         },
         get step() {
             return step;

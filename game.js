@@ -129,7 +129,7 @@ Game.prototype.level1 = function reload() {
             clearInterval(int);
             over = true;
             reload();
-            Graphics.start(60);
+            Graphics.start(fps);
         }
         else if (!over) {
             if (action['p'] && !paused) {

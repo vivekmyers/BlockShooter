@@ -299,6 +299,7 @@ Intro.prototype = {
 };
 
 function Title(text, color = "black") {
+    this.z = 3;
     this.content = text;
     this.size = 80;
     this.opacity = 0.8;
@@ -351,35 +352,78 @@ function Platform(x, y, width, height) {
     this.shape.rectangles[0].color = colors[Math.floor(Math.random() * colors.length)];
 }
 
-function Background() {
-    function Block() {
-        this.start = () => {
-            Graphics.toBack.call(null, this);
-            Graphics.after(5, Graphics.delete.bind(null, this));
-        };
-        const rand = x => Math.random() * x;
-        this.x = -1000;
-        this.y = -1000 + rand(2000);
-        this.dx = rand(500);
-        this.alpha = 0.5;
+function Background(x, y) {
+    function Block(x, y, w, h) {
+        this.ax = x;
+        this.ay = y;
+        this.z = -2;
+        Object.defineProperties(this, {
+            x: {
+                get: function () {
+                    return Graphics.center.x * 0.5 + this.ax;
+                }
+            },
+            y: {
+                get: function () {
+                    return Graphics.center.y * 0.5 + this.ay;
+                }
+            }
+        });
         this.shape = {
             rectangles: [
-                {width: rand(50) + 30, height: rand(20) + 10, color: "blue"}
+                //{width: w, height: h, color: "rgb(125, 220, 250)"}
+                {width: w, height: h, color: "rgb(160, 190, 220)"}
             ]
         }
+    }
 
+    function Sun(x, y) {
+        this.ax = x;
+        this.ay = y;
+        this.z = -2;
+        Object.defineProperties(this, {
+            x: {
+                get: function () {
+                    return Graphics.center.x + this.ax;
+                }
+            },
+            y: {
+                get: function () {
+                    return Graphics.center.y + this.ay;
+                }
+            }
+        });
+        this.shape = {
+            circles: []
+        };
+        for (let i = 0; i < 30; i++) {
+            this.shape.circles.push({
+                radius: 120 - 2 * i,
+                color: "rgb(" + (125 - i) + ", " + (220 - i) + ", " + (250 - i) + ")"
+            });
+        }
+        this.shape.circles.push({radius: 60, color: "yellow"});
     }
 
     const spawn = () => {
-        for (let i = 0; i < 8; i++) {
-            Graphics.add(new Block());
+        for (let i = -5; i < 5; i++) {
+            const b = new Block(i * 200, 0, 50, 2000);
+            Graphics.add(b);
+            Graphics.toBack(b);
+
         }
-        Graphics.after(0.1, spawn)
+        for (let i = -5; i < 5; i++) {
+            const b = new Block(0, i * 200, 2000, 50);
+            Graphics.add(b);
+            Graphics.toBack(b);
+
+        }
+        Graphics.add(new Sun(200, -150));
     };
 
     this.start = () => {
-        Graphics.background = "lightblue";
-        //spawn();
+        Graphics.background = "rgb(125, 220, 250)";
+        spawn();
     }
 
 }
@@ -387,6 +431,7 @@ function Background() {
 function Barrier(x, y, width, height) {
     this.x = x;
     this.y = y;
+    this.z = 0;
     this.alpha = 1.0;
     this.shape = {
         rectangles: [
@@ -401,10 +446,6 @@ function Barrier(x, y, width, height) {
             {width: 5, height: height - 5, x: -width / 2, id: "Left"}
         ]
     };
-    const that = this;
-    this.start = function () {
-        Graphics.toFront(that);
-    }
 }
 
 function Bullet(x, y, dx, dy) {
@@ -413,6 +454,7 @@ function Bullet(x, y, dx, dy) {
     this.dy = dy;
     this.x = x;
     this.y = y;
+    this.z = 2;
     this.alpha = 0.8;
     this.shape = {
         rectangles: [
