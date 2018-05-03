@@ -12,8 +12,7 @@ Graphics = function () {
     let started = false;
 
     function redraw() {
-        sprites.sort((a,b) => (a.z || 0) - (b.z || 0));
-        const tmp = sprites.slice();
+        sprites.sort((a, b) => (a.z || 0) - (b.z || 0));
         ctx.clearRect(0, 0, width, height);
         if (back) {
             ctx.globalAlpha = 1;
@@ -22,7 +21,7 @@ Graphics = function () {
         }
         const centX = (center.x || 0) - width / 2;
         const centY = (center.y || 0) - height / 2;
-        tmp.forEach(s => {
+        sprites.forEach(s => {
             const px = (s.x || 0) - centX;
             const py = (s.y || 0) - centY;
             if (s.shape) {
@@ -255,7 +254,7 @@ Graphics = function () {
                     removeSprite.call(s);
                     return;
                 }
-                const tmp = {x: s.x, y: s.y, alpha: s.alpha || 1, dx: s.dx, dy: s.dy};
+                const tmp = {x: s.x, y: s.y, alpha: s.alpha || 1, dx: s.dx, dy: s.dy, z: s.z};
                 if (s.shape) {
                     tmp.shape = s.shape;
                     tmp.shape.bounds = [];

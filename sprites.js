@@ -308,9 +308,6 @@ function Title(text, color = "black") {
     this.start = () => {
         Graphics.fade(this, this.opacity, 3);
     };
-    this.update = () => {
-        Graphics.toFront(this);
-    };
     this.shape = {
         rectangles: [
             {width: 2000, height: 2000, color: "gray"}
@@ -381,7 +378,7 @@ function Background(x, y) {
     function Sun(x, y) {
         this.ax = x;
         this.ay = y;
-        this.z = -2;
+        this.z = -3;
         Object.defineProperties(this, {
             x: {
                 get: function () {
@@ -410,14 +407,11 @@ function Background(x, y) {
         for (let i = -5; i < 5; i++) {
             const b = new Block(i * 200, 0, 50, 2000);
             Graphics.add(b);
-            Graphics.toBack(b);
 
         }
         for (let i = -5; i < 5; i++) {
             const b = new Block(0, i * 200, 2000, 50);
             Graphics.add(b);
-            Graphics.toBack(b);
-
         }
         Graphics.add(new Sun(200, -150));
     };
@@ -470,7 +464,9 @@ function Bullet(x, y, dx, dy) {
         Graphics.explosion(this, "black", 0.03, 5);
     };
     this.start = function () {
-        Graphics.after(2, () => Graphics.delete(this, 0.5));
+        Graphics.after(2, () => {
+            Graphics.delete(this, 0.5);
+        });
     };
     this.collision = function (o, t) {
         if (t === "Barrier") {

@@ -19,6 +19,7 @@ Game.prototype.level0 = function () {
         this.ay = y;
         this.x = x;
         this.y = y;
+        this.z = -1;
         this.alpha = 1.0;
         this.color = "black";
         const that = this;
