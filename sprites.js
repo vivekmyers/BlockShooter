@@ -441,8 +441,8 @@ function Barrier(x, y, width, height) {
         ],
         bounds: [
             {width: width, height: height, id: "Barrier"},
-            {width: width, height: 10, y: -height / 2, id: "Top"},
-            {width: width, height: 10, y: height / 2 - 5, id: "Bottom"},
+            {width: width - 5, height: 10, y: -height / 2, id: "Top"},
+            {width: width - 5, height: 10, y: height / 2 - 5, id: "Bottom"},
             {width: 5, height: height - 5, x: width / 2 - 5, id: "Right"},
             {width: 5, height: height - 5, x: -width / 2, id: "Left"}
         ]

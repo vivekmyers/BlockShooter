@@ -147,6 +147,7 @@ Graphics = function () {
     function RandomParticle(sprite, coloring, size) {
         this.x = sprite.x;
         this.y = sprite.y;
+        this.alpha = 1.0;
         const theta = Math.random() * 2 * Math.PI;
         const r = Math.random();
         this.shape = {
@@ -265,7 +266,6 @@ Graphics = function () {
                     tmp.shape.bounds = [];
                     tmp.scaleX = s.scaleX;
                     tmp.scaleY = s.scaleY;
-                    tmp.alpha = s.alpha;
                 }
                 removeSprite.call(s);
                 Graphics.add(tmp);
