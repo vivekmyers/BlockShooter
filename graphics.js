@@ -84,15 +84,21 @@ Graphics = function () {
     }
 
     function checkCollisions(s) {
-        if (s.shape) {
+        if (s.shape && s.shape.bounds) {
             const sx = s.scaleX || 1;
             const sy = s.scaleY || 1;
-            (s.shape.bounds || []).forEach(r => {
-                const w = sx * r.width || 0;
-                const h = sy * r.height || 0;
-                const cx = (sx * r.x || -w / 2) + (s.x || 0);
-                const cy = (sy * r.y || -h / 2) + (s.y || 0);
-                sprites.filter(o => o !== s).forEach(o => {
+            sprites.filter(o => o !== s && o.shape && o.shape.bounds).forEach(o => {
+                if (s.shape.rsize || o.shape.rsize) {
+                    const r = (s.shape.rsize || 0) + (o.shape.rsize || 0);
+                    if (Math.sqrt(Math.pow(s.x - o.x, 2) + Math.pow(s.y - o.y, 2)) > r) {
+                        return;
+                    }
+                }
+                (s.shape.bounds || []).forEach(r => {
+                    const w = sx * r.width || 0;
+                    const h = sy * r.height || 0;
+                    const cx = (sx * r.x || -w / 2) + (s.x || 0);
+                    const cy = (sy * r.y || -h / 2) + (s.y || 0);
                     if (o.group && s.group) {
                         if (o.group === s.group) {
                             return;

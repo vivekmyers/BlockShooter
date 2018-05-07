@@ -2,7 +2,7 @@
     window.action = {};
     document.addEventListener('keydown', e => {
         window.action[e.key.toLowerCase()] = true;
-        if(e.key === ' ') {
+        if (e.key === ' ') {
             e.preventDefault();
         }
     });
@@ -26,6 +26,7 @@ Gravity = function () {
 
 function Player(x, y) {
     Shooter.call(this, x, y);
+    this.id = "Player";
     this.color = "darkblue";
     this.act = function () {
         if (action['d']) {
@@ -193,6 +194,7 @@ function Shooter(x, y) {
 
 Shooter.prototype.reposition = function (x) {
     this.shape = {
+        rsize: 100,
         rectangles: [
             {width: 20, height: 4, y: 3, color: "tan"},
             {width: 6, height: 3, y: 2, x: 8, color: "black"},
@@ -335,6 +337,49 @@ Title.prototype = {
     constructor: Title
 };
 
+function Portal(x, y, target) {
+    this.target = target;
+    this.x = x;
+    this.y = y;
+    this.alpha = 0.5;
+    this.shape = {
+        circles: [
+            {radius: 20, color: "darkblue"}
+        ],
+        bounds: [
+            {width: 40, height: 40}
+        ]
+    };
+    this.count = 0;
+    this.update = () => {
+        this.count += 1 / Graphics.step;
+        if (this.count / 0.25 > 1) {
+            this.count -= 0.25;
+            Graphics.explosion(this, "darkblue", 0.5, 6);
+        }
+    };
+    //this.start = () => Graphics.after(16 * Math.random(), this.spawn.bind(this));
+    /*this.spawn = function () {
+        if (Graphics.sprites.filter(i => i.id === "Enemy").length < 10) {
+            Graphics.add(new Enemy(x, y, target));
+            Graphics.explosion(this, "blue", 0.8);
+        }
+        Graphics.after(16 * Math.random(), this.spawn.bind(this));
+    };*/
+    this.collision = (o, t, m) => {
+        if (!this[o])
+            if (t === "Player" || t === "Enemy") {
+                o.x = this.target.x;
+                o.y = this.target.y;
+                Graphics.explosion(this.target, "violet", 1.2);
+                Graphics.explosion(this, "violet", 1.2);
+                Graphics.after(0.3, () => this.target[o] = false);
+                this.target[o] = true;
+            }
+
+    };
+}
+
 function Platform(x, y, width, height) {
     Barrier.call(this, x, y, width, height);
     this.x = x;
@@ -436,6 +481,7 @@ function Barrier(x, y, width, height) {
     this.group = "Barrier";
     this.alpha = 1.0;
     this.shape = {
+        rsize: width + height,
         rectangles: [
             {width: width, height: height, color: "gray"}
         ],
@@ -459,6 +505,7 @@ function Bullet(x, y, dx, dy) {
     this.z = 2;
     this.alpha = 0.8;
     this.shape = {
+        rsize: 20,
         rectangles: [
             {width: 5, height: 5, color: "black"}
         ],

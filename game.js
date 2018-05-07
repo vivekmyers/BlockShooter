@@ -157,6 +157,11 @@ Game.prototype.level1 = function reload() {
 
     let int = setInterval(checkState, 100);
 
+    const port1 = new Portal(700, 400);
+    const port2 = new Portal(-100, -200);
+    port1.target = port2;
+    port2.target = port1;
+
     const ground = new Barrier(0, 750, 3000, 200);
     const hill1 = new Barrier(200, 700, 300, 300);
     const hill2 = new Barrier(700, 700, 220, 300);
@@ -166,5 +171,8 @@ Game.prototype.level1 = function reload() {
     const roof = new Barrier(0, -800, 3000, 800);
 
     Graphics.center = player.center;
-    Graphics.add(Gravity, p1, player, ground, wall1, wall2, roof, hill1, hill2, hill3, intro, new Background());
+    Graphics.add(Gravity, p1, player, ground,
+        wall1, wall2, roof, hill1, hill2,
+        hill3, intro, new Background(),
+        port1, port2);
 };
